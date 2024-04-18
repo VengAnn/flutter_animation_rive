@@ -15,6 +15,8 @@ class OnboardingPage extends StatefulWidget {
 
 class _OnboardingPageState extends State<OnboardingPage> {
   late RiveAnimationController _btnAnimationController;
+  //
+  bool isSignInDialogShown = false;
 
   @override
   void initState() {
@@ -52,102 +54,213 @@ class _OnboardingPageState extends State<OnboardingPage> {
             ),
           ),
           //let's add text
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 15.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Spacer(),
-                  const SizedBox(
-                    width: 260,
-                    child: Column(
-                      children: [
-                        Text(
-                          "Learn design & code",
-                          style: TextStyle(
-                            fontSize: 60,
-                            fontFamily: "Poppins",
-                            height: 1.2,
+          // when show dialog set alittle bit text up animated
+          AnimatedPositioned(
+            top: isSignInDialogShown ? -50 : 0,
+            duration: const Duration(milliseconds: 240),
+            height: MediaQuery.of(context).size.height,
+            width: MediaQuery.of(context).size.width,
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Spacer(),
+                    const SizedBox(
+                      width: 260,
+                      child: Column(
+                        children: [
+                          Text(
+                            "Learn design & code",
+                            style: TextStyle(
+                              fontSize: 60,
+                              fontFamily: "Poppins",
+                              height: 1.2,
+                            ),
                           ),
-                        ),
-                        //some space
-                        SizedBox(height: 10),
-                        //
-                        Text(
-                          "Don’t skip design. Learn design and code, by building real apps with Flutter and Swift. Complete courses about the best tools.",
-                        ),
-                      ],
+                          //some space
+                          SizedBox(height: 10),
+                          //
+                          Text(
+                            "Don’t skip design. Learn design and code, by building real apps with Flutter and Swift. Complete courses about the best tools.",
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  //add spacer
-                  const Spacer(flex: 2),
-                  //time to add the animated button
-                  AnimatedBtn(
-                    btnAnimationController: _btnAnimationController,
-                    onPress: () {
-                      _btnAnimationController.isActive = true;
-                      //when click on button i want show dialog for login or something else..
-                      showGeneralDialog(
-                        // let's close it while tap outside of dialog
-                        barrierDismissible: true,
-                        barrierLabel: "Sign In",
-                        context: context,
-                        pageBuilder: (context, animation, secondaryAnimation) =>
-                            Center(
-                          child: Container(
-                            height: 620,
-                            margin: const EdgeInsets.symmetric(horizontal: 20),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(40),
-                            ),
-                            child: const Scaffold(
-                              backgroundColor: Colors.transparent,
-                              body: Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 20),
-                                child: Column(
-                                  children: [
-                                    Text(
-                                      "Sign In",
-                                      style: TextStyle(
-                                        fontSize: 34,
-                                        fontFamily: "Poppins",
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding:
-                                          EdgeInsets.symmetric(vertical: 16),
-                                      child: Text(
-                                        "Access to 240+ hours of content. Learn design and code, by building real apps with Flutter and Swift.",
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ),
-                                    //sign form
-                                    SignInForm(),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  //
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 24),
-                    child: Text(
-                        "Purchase includes access to 30+ courses, 240+ premium tutorials, 120+ hours of videos, source files and certificates."),
-                  )
-                ],
+                    //add spacer
+                    const Spacer(flex: 2),
+                    //time to add the animated button
+                    AnimatedBtn(
+                      btnAnimationController: _btnAnimationController,
+                      onPress: () {
+                        _btnAnimationController.isActive = true;
+                        // we set show dialog it'll true
+                        setState(() {
+                          isSignInDialogShown = true;
+                        });
+                        // when click on button i want show dialog for login or something else..
+                        // and we need delay to see animation when click on btn
+                        Future.delayed(
+                          const Duration(milliseconds: 800),
+                          () {
+                            customSignInDialog(
+                              context,
+                              onClosed: (_) {
+                                setState(() {
+                                  isSignInDialogShown = false;
+                                });
+                              },
+                            );
+                          },
+                        );
+                      },
+                    ),
+                    //
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 24),
+                      child: Text(
+                          "Purchase includes access to 30+ courses, 240+ premium tutorials, 120+ hours of videos, source files and certificates."),
+                    )
+                  ],
+                ),
               ),
             ),
           ),
         ],
       ),
     );
+  }
+
+  Future<Object?> customSignInDialog(BuildContext context,
+      {required ValueChanged onClosed}) {
+    return showGeneralDialog(
+      // let's close it while tap outside of dialog
+      barrierDismissible: true,
+      barrierLabel: "Sign In",
+      context: context,
+      transitionDuration: const Duration(milliseconds: 400),
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        Tween<Offset> tween;
+        tween = Tween(begin: const Offset(0, -1), end: Offset.zero);
+        return SlideTransition(
+          position: tween.animate(
+              CurvedAnimation(parent: animation, curve: Curves.easeInOut)),
+          child: child,
+        );
+      },
+      pageBuilder: (context, animation, secondaryAnimation) => Center(
+        child: Container(
+          height: 620,
+          margin: const EdgeInsets.symmetric(horizontal: 20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(40),
+          ),
+          child: Scaffold(
+            backgroundColor: Colors.transparent,
+            body: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Column(
+                    children: [
+                      const Text(
+                        "Sign In",
+                        style: TextStyle(
+                          fontSize: 34,
+                          fontFamily: "Poppins",
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        child: Text(
+                          "Access to 240+ hours of content. Learn design and code, by building real apps with Flutter and Swift.",
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      //sign form
+                      const SignInForm(),
+                      //some space
+                      const SizedBox(height: 20),
+                      const Row(
+                        children: [
+                          Expanded(child: Divider(thickness: 2)),
+                          Padding(
+                            padding: EdgeInsets.only(
+                              left: 5.0,
+                              right: 5.0,
+                            ),
+                            child: Text(
+                              "OR",
+                              style: TextStyle(),
+                            ),
+                          ),
+                          Expanded(child: Divider(thickness: 2)),
+                        ],
+                      ),
+                      //
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 20),
+                        child: Text(
+                          "Sign up with Email, Apple or Google",
+                          style: TextStyle(color: Colors.black54),
+                        ),
+                      ),
+                      //three icon
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          IconButton(
+                            onPressed: () {},
+                            icon: SvgPicture.asset(
+                              "assets/icons/email_box.svg",
+                              width: 64,
+                              height: 64,
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () {},
+                            icon: SvgPicture.asset(
+                              "assets/icons/apple_box.svg",
+                              width: 64,
+                              height: 64,
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () {},
+                            icon: SvgPicture.asset(
+                              "assets/icons/google_box.svg",
+                              width: 64,
+                              height: 64,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: -22,
+                    child: CircleAvatar(
+                      radius: 16,
+                      backgroundColor: Colors.white,
+                      child: Icon(
+                        Icons.close,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    ).then(onClosed);
   }
 }
 
