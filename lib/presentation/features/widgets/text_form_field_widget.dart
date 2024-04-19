@@ -4,16 +4,18 @@ import 'package:flutter_svg/svg.dart';
 class TextFormFieldWidget extends StatelessWidget {
   final String labelText;
   final String svgImage;
+  final String? Function(String?)? validator;
 
   const TextFormFieldWidget({
     super.key,
     required this.labelText,
-    required this.svgImage,
+    required this.svgImage, required this.validator,
   });
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      validator: validator,
       decoration: InputDecoration(
           // you can use other icon jpg or png
           prefixIcon: Padding(
